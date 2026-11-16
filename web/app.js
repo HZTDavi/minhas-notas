@@ -66,7 +66,19 @@ function textoLembrete(iso) {
 const CORES = [
   ['', 'Padrão'], ['vermelho', 'Vermelho'], ['laranja', 'Laranja'], ['amarelo', 'Amarelo'], ['verde', 'Verde'],
   ['turquesa', 'Turquesa'], ['azul', 'Azul'], ['roxo', 'Roxo'], ['rosa', 'Rosa'], ['cinza', 'Cinza'],
+  ['coral', 'Coral'], ['pessego', 'Pêssego'], ['areia', 'Areia'], ['lima', 'Lima'], ['menta', 'Menta'],
+  ['ceu', 'Céu'], ['indigo', 'Índigo'], ['lavanda', 'Lavanda'], ['magenta', 'Magenta'], ['marrom', 'Marrom'],
 ];
+// cor escolhida livremente (guardada como #rrggbb): pinta o fundo e ajusta o texto para continuar legível
+function pintarCor(elm, cor) {
+  elm.setAttribute('data-cor', cor || '');
+  if (cor && cor[0] === '#') {
+    const r = parseInt(cor.slice(1, 3), 16), g = parseInt(cor.slice(3, 5), 16), b = parseInt(cor.slice(5, 7), 16);
+    const claro = (0.299 * r + 0.587 * g + 0.114 * b) > 150;
+    elm.style.background = cor; elm.style.color = claro ? '#202124' : '#f1f3f4';
+    elm.style.setProperty('--texto', claro ? '#202124' : '#f1f3f4'); elm.style.setProperty('--texto-2', claro ? '#5f6368' : '#c4c7c5');
+  } else { elm.style.background = ''; elm.style.color = ''; elm.style.removeProperty('--texto'); elm.style.removeProperty('--texto-2'); }
+}
 
 /* ---------- Estado e persistência ---------- */
 const estado = { notas: [], marcadores: [], notificados: new Set(), vista: 'notas', busca: '', config: {} };
@@ -253,10 +265,17 @@ document.addEventListener('keydown', e => {
 let fecharDialogoAtual = null;
 
 function popCor(ancora, n, aoMudar) {
-  const pal = el('div', { class: 'paleta' }, CORES.map(([c, nome]) => el('button', {
-    'data-cor': c, title: nome, class: n.cor === c ? 'sel' : '',
+  const livre = n.cor && n.cor[0] === '#';
+  const seletor = el('input', { type: 'color', value: livre ? n.cor : '#ffcc80', class: 'cor-livre-input',
+    oninput: e => { n.cor = e.target.value; tocar(n); aoMudar(); },
+    onchange: () => fecharPop() });
+  const botoes = CORES.map(([c, nome]) => el('button', {
+    'data-cor': c, title: nome, 'aria-label': nome, class: n.cor === c ? 'sel' : '',
     onclick: () => { n.cor = c; tocar(n); fecharPop(); aoMudar(); },
-  })));
+  }));
+  const pers = el('button', { class: 'cor-livre' + (livre ? ' sel' : ''), title: 'Personalizada', 'aria-label': 'Cor personalizada',
+    style: livre ? `background:${n.cor}` : '', onclick: () => seletor.click() });
+  const pal = el('div', { class: 'paleta' }, ...botoes, pers, seletor);
   abrirPop(ancora, pal);
 }
 
@@ -592,6 +611,7 @@ function cartao(n) {
     onclick: e => { if (!acabouDeArrastar && !naLixeira && !e.target.closest('button,input,label')) abrirEditor(n); },
     onkeydown: e => { if (e.key === 'Enter' && e.target === c && !naLixeira) abrirEditor(n); },
   });
+  pintarCor(c, n.cor);
   if (!naLixeira) {
     c.append(btnIcone(n.fixada ? 'pino' : 'pinoVazio', n.fixada ? 'Desafixar' : 'Fixar',
       () => { n.fixada = !n.fixada; if (n.fixada) n.arquivada = false; tocar(n); render(); }, 'fixar' + (n.fixada ? ' ligado' : '')));
@@ -698,7 +718,7 @@ function autoAltura(t) { t.style.height = 'auto'; t.style.height = t.scrollHeigh
 function desenharEditor(focar = false, focoItem = null) {
   const n = editando;
   const ed = $('#editor');
-  ed.setAttribute('data-cor', n.cor);
+  pintarCor(ed, n.cor);
   const redesenhar = (f = null) => desenharEditor(false, f);
   const mudou = () => { tocar(n); };
 
@@ -832,7 +852,7 @@ function editorLista(n, redesenhar, focoItem) {
 function dialogoMarcadores() {
   const modal = $('#modal');
   const ed = $('#editor');
-  ed.removeAttribute('data-cor');
+  pintarCor(ed, ''); ed.removeAttribute('data-cor');
   modal.hidden = false;
   const fechar = () => { modal.hidden = true; modal.removeEventListener('mousedown', foraClique); salvar(); render(); };
   const foraClique = e => { if (e.target === modal) fechar(); };
@@ -899,7 +919,7 @@ const NOMES_SONS = { alarme: 'Despertador', sino: 'Sino', telefone: 'Telefone to
 function dialogoConfig() {
   const modal = $('#modal');
   const ed = $('#editor');
-  ed.removeAttribute('data-cor');
+  pintarCor(ed, ''); ed.removeAttribute('data-cor');
   modal.hidden = false;
   const cfg = { ...estado.config };
   const fechar = () => { modal.hidden = true; modal.removeEventListener('mousedown', foraClique); fecharDialogoAtual = null; render(); };
