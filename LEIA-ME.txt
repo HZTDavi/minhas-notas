@@ -4,6 +4,12 @@ MINHAS NOTAS - instalação no Linux
 2. Abra um terminal dentro da pasta "minhas-notas" e rode:
       ./instalar.sh
 3. Procure "Minhas Notas" no menu de aplicativos.
+   Uma bolinha flutuante com o ícone fica sempre na tela: clique para abrir,
+   arraste para mudar de lugar, botão direito para mais opções.
+   A bolinha e o app abrem sozinhos quando o PC é ligado.
 
-Precisa de: python3 e um navegador (Chrome, Chromium, Brave ou Edge abre em janela própria).
+Precisa de: python3, python3-gobject/gtk3 (para a bolinha) e um navegador
+(Chrome, Chromium, Brave ou Edge abre em janela própria).
 Suas notas ficam salvas em ~/minhas-notas/dados.json.
+
+App Android: veja a pasta android-app/ (README.md explica como gerar o APK).

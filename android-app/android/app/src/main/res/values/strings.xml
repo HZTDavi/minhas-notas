@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Minhas Notas</string>
+    <string name="title_activity_main">Minhas Notas</string>
+    <string name="package_name">app.minhasnotas.notas</string>
+    <string name="custom_url_scheme">app.minhasnotas.notas</string>
+    <string name="acessibilidade_nome">Minhas Notas</string>
+    <string name="acessibilidade_resumo">Abre o Minhas Notas pelo botão de acessibilidade</string>
+    <string name="acessibilidade_descricao">Coloca o Minhas Notas no botão flutuante de acessibilidade, para abrir suas notas de qualquer tela com um toque. Este atalho não lê nem controla nada da tela: ele só abre o app.</string>
+</resources>

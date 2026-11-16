@@ -1,0 +1,9 @@
+{
+  "appId": "app.minhasnotas.notas",
+  "appName": "Minhas Notas",
+  "webDir": "www",
+  "android": { "backgroundColor": "#202124" },
+  "plugins": {
+    "LocalNotifications": { "smallIcon": "ic_stat_notas", "iconColor": "#F59E0B" }
+  }
+}
