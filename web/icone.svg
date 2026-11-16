@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd25e"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="papel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#fff7e6"/>
+    </linearGradient>
+    <filter id="sombra" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#8a4b00" flood-opacity=".28"/>
+    </filter>
+  </defs>
+  <!-- fundo -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#fundo)"/>
+  <!-- folha com canto dobrado -->
+  <g filter="url(#sombra)">
+    <path d="M128 104h196l68 68v228a24 24 0 0 1-24 24H128a24 24 0 0 1-24-24V128a24 24 0 0 1 24-24z" fill="url(#papel)"/>
+    <path d="M324 104v52a16 16 0 0 0 16 16h52z" fill="#ffd98a"/>
+  </g>
+  <!-- item marcado -->
+  <rect x="146" y="196" width="40" height="40" rx="10" fill="#f59e0b"/>
+  <path d="M155 216l10 10 18-20" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="204" y="208" width="120" height="16" rx="8" fill="#e5d3b3"/>
+  <!-- itens -->
+  <rect x="146" y="262" width="40" height="40" rx="10" fill="none" stroke="#f0b440" stroke-width="7"/>
+  <rect x="204" y="274" width="140" height="16" rx="8" fill="#9a6a1c"/>
+  <rect x="146" y="328" width="40" height="40" rx="10" fill="none" stroke="#f0b440" stroke-width="7"/>
+  <rect x="204" y="340" width="96" height="16" rx="8" fill="#9a6a1c"/>
+  <!-- sininho -->
+  <g transform="translate(360 352)">
+    <circle r="66" fill="#e2453c" stroke="#fff" stroke-width="10"/>
+    <path d="M0-36c-17 0-29 13-29 30v18l-9 11h76l-9-11V-6c0-17-12-30-29-30z" fill="#fff"/>
+    <circle cy="31" r="9" fill="#fff"/>
+  </g>
+</svg>

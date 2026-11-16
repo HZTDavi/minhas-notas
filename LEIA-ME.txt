@@ -1,0 +1,9 @@
+MINHAS NOTAS - instalação no Linux
+
+1. Extraia este arquivo (clique com o botão direito > Extrair aqui).
+2. Abra um terminal dentro da pasta "minhas-notas" e rode:
+      ./instalar.sh
+3. Procure "Minhas Notas" no menu de aplicativos.
+
+Precisa de: python3 e um navegador (Chrome, Chromium, Brave ou Edge abre em janela própria).
+Suas notas ficam salvas em ~/minhas-notas/dados.json.
