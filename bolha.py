@@ -13,6 +13,7 @@ import urllib.request
 from datetime import datetime
 
 os.environ["GDK_BACKEND"] = "x11"  # no Wayland só assim dá para ficar sempre por cima
+import cairo  # noqa: E402
 import gi  # noqa: E402
 
 gi.require_version("Gtk", "3.0")
@@ -26,7 +27,7 @@ ICONE = os.path.join(PASTA, "web", "icones", "icone-192.png")
 ABRIR = os.path.join(PASTA, "abrir.sh")
 CONFIG = os.path.expanduser("~/.config/minhas-notas/bolha.json")
 API = "http://127.0.0.1:8765/api/notas"
-TAM = 60  # tamanho da bolinha em pixels
+TAM = 68  # tamanho da bolinha em pixels
 
 
 def ler_pos():
@@ -108,12 +109,14 @@ class Bolha(Gtk.Window):
         self.set_type_hint(Gdk.WindowTypeHint.DOCK)
         self.set_focus_on_map(False)
         self.set_default_size(TAM, TAM)
+        self.set_size_request(TAM, TAM)
         self.set_app_paintable(True)
         visual = self.get_screen().get_rgba_visual()
         if visual:
             self.set_visual(visual)
 
-        self.icone = GdkPixbuf.Pixbuf.new_from_file_at_scale(ICONE, TAM - 6, TAM - 6, True)
+        self.ICO = int(TAM * 1.18)
+        self.icone = GdkPixbuf.Pixbuf.new_from_file_at_scale(ICONE, self.ICO, self.ICO, True)
         self.pendentes = 0
         self.sobre = False
         self.apertou = None
@@ -130,6 +133,7 @@ class Bolha(Gtk.Window):
         self.connect("leave-notify-event", lambda *_: self._hover(False))
         self.connect("configure-event", self.ao_mudar)
         self.connect("destroy", Gtk.main_quit)
+        self.connect("realize", lambda *_: self.forma_do_clique())
 
         pos = ler_pos()
         if pos:
@@ -159,7 +163,7 @@ class Bolha(Gtk.Window):
         cr.scale(escala, escala)
         cr.arc(0, 0, s / 2 - 3, 0, 2 * math.pi)
         cr.clip()
-        Gdk.cairo_set_source_pixbuf(cr, self.icone, -(s - 6) / 2, -(s - 6) / 2)
+        Gdk.cairo_set_source_pixbuf(cr, self.icone, -self.ICO / 2, -self.ICO / 2)
         cr.paint()
         cr.restore()
         if self.pendentes:
@@ -179,6 +183,21 @@ class Bolha(Gtk.Window):
             cr.show_text(txt)
         return False
 
+    def forma_do_clique(self):
+        s, r = TAM, TAM / 2 - 2
+        reg = cairo.Region()
+        def circulo(cx, cy, rr):
+            for y in range(int(cy - rr), int(cy + rr) + 1):
+                dy = y + 0.5 - cy
+                if abs(dy) > rr:
+                    continue
+                dx = math.sqrt(rr * rr - dy * dy)
+                reg.union(cairo.RectangleInt(int(cx - dx), y, max(1, int(2 * dx)), 1))
+        circulo(s / 2, s / 2, r)
+        if self.pendentes:
+            circulo(s - 11, 11, 10)
+        self.input_shape_combine_region(reg)
+
     def _hover(self, sim):
         self.sobre = sim
         self.queue_draw()
@@ -187,6 +206,8 @@ class Bolha(Gtk.Window):
         novo = contar_lembretes_hoje()
         if novo != self.pendentes:
             self.pendentes = novo
+            if self.get_realized():
+                self.forma_do_clique()
             self.set_tooltip_text(f"Minhas Notas — {novo} lembrete(s) hoje" if novo else
                                   "Minhas Notas — clique para abrir, arraste para mover")
             self.queue_draw()
