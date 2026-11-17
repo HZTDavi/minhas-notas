@@ -300,3 +300,15 @@ html.nativo #btn-tema { display: inline-grid; }
 .fundo-modal { grid-template-columns: minmax(0, 1fr); }
 .editor .barra-ed { flex-wrap: wrap; }
 .busca { min-width: 0; }
+
+/* conexão entre aparelhos */
+.aparelho-btn { border: 1px solid var(--borda); background: var(--superficie); border-radius: 18px; height: 36px; padding: 0 12px; font-size: 14px; white-space: nowrap; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; flex: none; }
+.aparelho-btn.remoto { background: #1a73e8; border-color: #1a73e8; color: #fff; }
+.faixa-remoto { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 auto 16px; max-width: 600px; padding: 10px 14px; border-radius: 8px; background: #1a73e8; color: #fff; font-size: 14px; }
+.faixa-remoto .link { color: #fff; text-decoration: underline; border: 0; background: none; font-weight: 600; padding: 4px; }
+.menu-aparelhos { min-width: 240px; }
+.menu-aparelhos .opcao.sel { font-weight: 700; }
+.menu-aparelhos .carregando { padding: 8px 16px; color: var(--texto-2); font-size: 14px; margin: 0; }
+.codigo-grande { font: 700 clamp(17px, 5.6vw, 26px)/1.2 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 1px; white-space: nowrap; text-align: center; padding: 12px; border: 2px dashed var(--borda); border-radius: 8px; margin: 8px 0; user-select: all; }
+.link.perigo { color: #d93025 !important; }
+@media (max-width: 560px) { .aparelho-btn { max-width: 34vw; padding: 0 8px; font-size: 13px; } }

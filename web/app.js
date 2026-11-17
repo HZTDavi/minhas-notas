@@ -129,10 +129,12 @@ function salvar() {
 async function enviar() {
   clearTimeout(timerSalvar);
   timerSalvar = null;
+  if (estado.vendo) { window.Nuvem?.salvarRemoto(); return; }   // vendo outro aparelho: salva lá, não aqui
   if (NATIVO) {
     try {
       await Plug.Preferences.set({ key: 'dados', value: JSON.stringify({ notas: estado.notas, marcadores: estado.marcadores }) });
       await reagendar();
+      window.Nuvem?.publicar();
     } catch (e) { aviso('Erro ao salvar: ' + (e.message || e)); }
     return;
   }
@@ -142,12 +144,13 @@ async function enviar() {
       body: JSON.stringify({ notas: estado.notas, marcadores: estado.marcadores }),
     });
     if (!r.ok) throw new Error(r.status);
+    window.Nuvem?.publicar();
   } catch (e) {
     aviso('Erro ao salvar! Verifique se o servidor está rodando.');
   }
 }
 window.addEventListener('beforeunload', () => {
-  if (timerSalvar && !NATIVO) {
+  if (timerSalvar && !NATIVO && !estado.vendo) {
     navigator.sendBeacon && fetch('/api/notas', {
       method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notas: estado.notas, marcadores: estado.marcadores }),
@@ -166,6 +169,7 @@ setInterval(async () => {
 }, 30000);
 
 function limparLixeiraAntiga() {
+  if (estado.vendo) return;
   const limite = Date.now() - 7 * 86400000;
   const antes = estado.notas.length;
   estado.notas = estado.notas.filter(n => !(n.lixeira && n.lixeiraEm && n.lixeiraEm < limite));
@@ -175,12 +179,12 @@ function limparLixeiraAntiga() {
 // No celular, quem dispara é o Android: considera disparado quando a hora passou
 const jaPassou = quando => new Date(quando).getTime() <= Date.now();
 function lembreteDisparado(n) {
-  if (NATIVO) return !!n.lembrete && jaPassou(n.lembrete);
+  if (NATIVO || estado.vendo) return !!n.lembrete && jaPassou(n.lembrete);
   return n.lembrete && estado.notificados.has(`${n.id}|${n.lembrete}`);
 }
 // Lembretes de itens específicos da lista
 function itemDisparado(n, i) {
-  if (NATIVO) return !!i.lembrete && jaPassou(i.lembrete);
+  if (NATIVO || estado.vendo) return !!i.lembrete && jaPassou(i.lembrete);
   return i.lembrete && estado.notificados.has(`${n.id}:${i.id}|${i.lembrete}`);
 }
 function itensComLembrete(n) {
@@ -995,6 +999,7 @@ $('#btn-mais').onclick = e => {
       a.click(); URL.revokeObjectURL(a.href);
     } }, 'Exportar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); $('#arquivo-importar').click(); } }, 'Importar backup'),
+    el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Nuvem?.dialogo(); } }, 'Conectar aparelhos…'),
   ]);
 };
 $('#arquivo-importar').onchange = async e => {
@@ -1125,6 +1130,7 @@ function menuNativo(ancora) {
       } catch (e) { if (!/cancel/i.test(e.message || '')) aviso('Não consegui exportar'); }
     } }, 'Exportar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); $('#arquivo-importar').click(); } }, 'Importar backup'),
+    el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Nuvem?.dialogo(); } }, 'Conectar aparelhos…'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); dialogoMarcadores(); } }, 'Editar marcadores'),
   ]);
 }
