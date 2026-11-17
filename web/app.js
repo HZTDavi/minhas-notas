@@ -2,6 +2,7 @@
 
 /* ---------- Ícones ---------- */
 const ICONES = {
+  copiar: 'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z',
   nota: 'M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z',
   sino: 'M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z',
   marcador: 'M17.63 5.84A2 2 0 0 0 16 5L5 5.01A2 2 0 0 0 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z',
@@ -41,6 +42,18 @@ function el(tag, attrs = {}, ...filhos) {
   }
   for (const f of filhos.flat(Infinity)) if (f != null && f !== false) e.append(f.nodeType ? f : document.createTextNode(f));
   return e;
+}
+// copia para a área de transferência (com plano B para navegadores sem a API nova)
+async function copiar(texto, msg = 'Copiado') {
+  try { await navigator.clipboard.writeText(texto); }
+  catch (e) { const t = el('textarea', { style: 'position:fixed;opacity:0' }); t.value = texto; document.body.append(t); t.select(); try { document.execCommand('copy'); } catch (er) {} t.remove(); }
+  aviso(msg);
+}
+function textoDaNota(n) {
+  const corpo = n.tipo === 'lista'
+    ? n.itens.filter(i => i.texto.trim()).map(i => (i.feito ? '✓ ' : '• ') + i.texto).join('\n')
+    : (n.texto || '');
+  return [n.titulo, corpo].filter(x => x && x.trim()).join('\n\n');
 }
 function btnIcone(nome, titulo, onclick, extra = '') {
   return el('button', { class: 'icone-btn pequeno ' + extra, title: titulo, 'aria-label': titulo, html: icone(nome), onclick });
@@ -630,7 +643,8 @@ function cartao(n) {
         el('input', { type: 'checkbox', disabled: naLixeira, onchange: () => { i.feito = true; tocar(n); atualizar(); } }),
         el('span', {}, i.texto,
           i.lembrete ? el('small', { class: 'lembrete-item' + (itemDisparado(n, i) ? ' passou' : ''), title: 'Lembrete deste item' },
-            '⏰ ' + textoLembrete(i.lembrete) + iconesAlerta(i)) : null)));
+            '⏰ ' + textoLembrete(i.lembrete) + iconesAlerta(i)) : null),
+        btnIcone('copiar', 'Copiar este item', e => { e.preventDefault(); e.stopPropagation(); copiar(i.texto, 'Item copiado'); }, 'copiar-item')));
     }
     const resto = pend.length - mostrar.length;
     if (resto > 0) c.append(el('div', { class: 'mais-itens' }, `+ ${resto} ${resto === 1 ? 'item' : 'itens'}`));
@@ -662,6 +676,7 @@ function cartao(n) {
     barra.append(
       btnIcone('sino', 'Lembrete', e => popLembrete(e.currentTarget, n, render)),
       btnIcone('paleta', 'Cor', e => popCor(e.currentTarget, n, atualizar)),
+      btnIcone('copiar', 'Copiar texto', e => { e.stopPropagation(); copiar(textoDaNota(n), 'Texto copiado'); }),
       n.arquivada
         ? btnIcone('desarquivar', 'Desarquivar', () => acao(n, 'arquivada', false, 'Nota desarquivada'))
         : btnIcone('arquivar', 'Arquivar', () => acao(n, 'arquivada', true, 'Nota arquivada')),
@@ -761,6 +776,7 @@ function desenharEditor(focar = false, focoItem = null) {
   const barra = el('div', { class: 'barra-ed' },
     btnIcone('sino', 'Lembrete', e => popLembrete(e.currentTarget, n, () => redesenhar())),
     btnIcone('paleta', 'Cor', e => popCor(e.currentTarget, n, () => redesenhar())),
+    btnIcone('copiar', 'Copiar texto', () => copiar(textoDaNota(n), 'Texto copiado')),
     btnIcone(n.tipo === 'lista' ? 'texto' : 'lista', n.tipo === 'lista' ? 'Converter em texto' : 'Converter em lista', () => { alternarTipo(n); redesenhar(); }),
     btnIcone('marcador', 'Marcadores', e => popMarcadores(e.currentTarget, n, () => { redesenhar(); renderLateral(); })),
     n.arquivada
@@ -821,6 +837,7 @@ function editorLista(n, redesenhar, focoItem) {
         ? el('button', { class: 'chip lembrete-item-ed' + (itemDisparado(n, i) ? ' passou' : ''), title: 'Alterar lembrete deste item', onclick: abrirLembrete },
           '⏰ ' + textoLembrete(i.lembrete) + iconesAlerta(i))
         : btnIcone('sino', 'Lembrete só para este item', abrirLembrete, 'sino-item'),
+      btnIcone('copiar', 'Copiar este item', () => copiar(i.texto, 'Item copiado')),
       btnIcone('fechar', 'Remover item', () => { n.itens = n.itens.filter(x => x !== i); tocar(n); redesenhar(); }));
   };
 

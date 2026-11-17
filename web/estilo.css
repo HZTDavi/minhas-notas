@@ -312,3 +312,11 @@ html.nativo #btn-tema { display: inline-grid; }
 .codigo-grande { font: 700 clamp(17px, 5.6vw, 26px)/1.2 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 1px; white-space: nowrap; text-align: center; padding: 12px; border: 2px dashed var(--borda); border-radius: 8px; margin: 8px 0; user-select: all; }
 .link.perigo { color: #d93025 !important; }
 @media (max-width: 560px) { .aparelho-btn { max-width: 34vw; padding: 0 8px; font-size: 13px; } }
+
+/* copiar item da lista (no cartão) */
+.cartao .item span { flex: 1; min-width: 0; }
+.cartao .item .copiar-item { width: 28px; height: 28px; margin: -4px -6px -4px 0; opacity: 0; flex: none; }
+.cartao .item .copiar-item svg { width: 16px; height: 16px; }
+.cartao:hover .item .copiar-item { opacity: .55; }
+.cartao .item .copiar-item:hover { opacity: 1; }
+@media (hover: none) { .cartao .item .copiar-item { opacity: .5; } }
