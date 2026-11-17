@@ -1,7 +1,7 @@
 /* Minhas Notas — conexão entre aparelhos (celular, PC do trabalho, PC de casa).
  *
  * Cada aparelho continua com as PRÓPRIAS notas. Quando conectados com o mesmo código, cada um publica uma cópia
- * das suas notas em espacos/<código>/aparelhos/<id> (Firebase Realtime Database, via REST, login anônimo).
+ * das suas notas em espacos/<código>/aparelhos/<id> (Firebase Realtime Database, via REST).
  * O botão do topo troca a "tela": ver/editar as notas de outro aparelho. A edição vai para a cópia dele na nuvem
  * e o dono junta (a versão mais nova de cada nota vence, pelo campo `editada`).
  * Quem não tem o código não lê nada (regras em regras-firebase.json).
@@ -19,7 +19,7 @@
   const ler = () => { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } };
   const gravar = c => { try { localStorage.setItem(CHAVE, JSON.stringify(c)); } catch (e) {} };
   let C = ler();
-  const configurada = () => !!(CFG && CFG.apiKey && CFG.databaseURL);
+  const configurada = () => !!(CFG && CFG.databaseURL);
   const conectado = () => configurada() && !!C.codigo;
   const nomePadrao = () => (NATIVO ? 'Celular' : 'PC');
   if (!C.meuId) { C.meuId = 'a' + uid(); gravar(C); }
@@ -27,6 +27,7 @@
   // ── login anônimo (Identity Toolkit REST) ──
   const authBase = () => (CFG.authHost || 'https://');
   async function token() {
+    if (!CFG.apiKey) return null;   // sem login: a proteção é o código secreto de 16 caracteres
     if (C.token && C.exp > Date.now() + 60000) return C.token;
     let r;
     if (C.refresh) {
@@ -42,7 +43,8 @@
     return C.token;
   }
   async function db(caminho, metodo = 'GET', corpo, extra = '') {
-    const url = CFG.databaseURL.replace(/\/$/, '') + '/espacos/' + C.codigo + (caminho ? '/' + caminho : '') + '.json?auth=' + (await token()) +
+    const tk = await token();
+    const url = CFG.databaseURL.replace(/\/$/, '') + '/espacos/' + C.codigo + (caminho ? '/' + caminho : '') + '.json?' + (tk ? 'auth=' + tk : '') +
       (CFG.ns ? '&ns=' + CFG.ns : '') + extra;
     const r = await fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json' }, body: corpo === undefined ? undefined : JSON.stringify(corpo) });
     if (!r.ok) throw new Error('nuvem ' + r.status);

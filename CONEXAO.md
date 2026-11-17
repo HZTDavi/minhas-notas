@@ -3,21 +3,14 @@
 Cada aparelho continua com as próprias notas. O botão do topo ("💻 PC do trabalho ▾") troca a tela para ver e editar as notas de outro aparelho conectado.
 As notas passam por um banco de dados gratuito do Google (Firebase), e só quem tem o código da conexão consegue ler.
 
-## 1. Criar o projeto Firebase (uma vez só, ~5 minutos)
+## 1. Projeto Firebase (já está feito)
 
-1. Abra https://console.firebase.google.com e entre com a sua conta Google.
-2. Clique em **Criar um projeto** (ou "Adicionar projeto"). Nome: `minhas-notas`. Pode desligar o Google Analytics. Clique em **Criar projeto**.
-3. No menu da esquerda: **Criação > Authentication > Vamos começar**. Na aba **Método de login**, escolha **Anônimo**, ative e salve.
-4. No menu da esquerda: **Criação > Realtime Database > Criar banco de dados**. Escolha o local **Estados Unidos (us-central1)**, depois **Iniciar no modo bloqueado** e clique em **Ativar**.
-5. Ainda no Realtime Database, abra a aba **Regras**, apague tudo, cole o conteúdo do arquivo `regras-firebase.json` e clique em **Publicar**.
-6. Na engrenagem (canto de cima, à esquerda) > **Configurações do projeto**. Em "Seus apps", clique no ícone **</>** (Web), dê o nome `minhas-notas` e clique em **Registrar app**.
-   Vai aparecer um bloco `firebaseConfig`. Copie o **apiKey** e o **databaseURL** e mande para o Claude, ou cole em `web/nuvem-config.js`:
+O projeto é **minhas-notas-22fae** (plano gratuito), com o banco `https://minhas-notas-22fae-default-rtdb.firebaseio.com`.
+O endereço está em `web/nuvem-config.js` e as regras em `regras-firebase.json`. Não há login: a proteção é o código secreto de 16 caracteres.
+- Sem o código, nada pode ser lido nem gravado.
+- Também não dá para listar as conexões que existem.
 
-```js
-window.MN_NUVEM = { apiKey: 'AIza...', databaseURL: 'https://minhas-notas-xxxxx-default-rtdb.firebaseio.com' };
-```
-
-O plano gratuito (Spark) sobra para notas: 1 GB guardado e 10 GB por mês de transferência.
+Para mudar as regras: `firebase deploy --only database --project minhas-notas-22fae` (com um `firebase.json` apontando para `regras-firebase.json`).
 
 ## 2. Conectar os aparelhos
 

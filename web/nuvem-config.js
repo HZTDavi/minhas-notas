@@ -1,5 +1,3 @@
-// Configuração da conexão entre aparelhos (Firebase). Preencha com os dados do SEU projeto
-// (Console do Firebase > Configurações do projeto > Seus apps > Web). Sem isto, o app funciona normal, só sem conexão.
-window.MN_NUVEM = window.MN_NUVEM || null;
-// Exemplo:
-// window.MN_NUVEM = { apiKey: 'AIza...', databaseURL: 'https://SEU-PROJETO-default-rtdb.firebaseio.com' };
+// Conexão entre aparelhos: banco do projeto Firebase "minhas-notas-22fae" (plano gratuito).
+// A proteção é o código de 16 caracteres de cada conexão: sem ele, ninguém lê nada (regras-firebase.json).
+window.MN_NUVEM = window.MN_NUVEM || { databaseURL: 'https://minhas-notas-22fae-default-rtdb.firebaseio.com' };

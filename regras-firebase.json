@@ -4,8 +4,8 @@
     ".write": false,
     "espacos": {
       "$codigo": {
-        ".read": "auth != null && $codigo.length >= 16",
-        ".write": "auth != null && $codigo.length >= 16"
+        ".read": "$codigo.length >= 16",
+        ".write": "$codigo.length >= 16"
       }
     }
   }
