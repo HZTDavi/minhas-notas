@@ -11,6 +11,7 @@ Notas, listas e lembretes, no estilo "bloco de notas inteligente". Roda no PC (L
 | `bolha.py` | Bolinha flutuante (GTK3) sempre por cima das janelas; abre/minimiza o app. |
 | `abrir.sh` | Abre o app numa janela própria do navegador. |
 | `instalar.sh` | Instala no PC: serviço systemd, atalho no menu, bolinha e início automático. |
+| `windows/` | Versão para Windows: `instalar.bat` (instala o Python pelo winget se faltar, copia para `%LOCALAPPDATA%\MinhasNotas`, cria atalhos e início automático), `abrir.vbs` (janela própria do Edge), `desinstalar.bat`. `empacotar.sh` gera `dist/MinhasNotas-Windows.zip`. |
 | `android-app/` | App Android (Capacitor 7). Notas salvas no próprio celular; lembretes com notificações nativas; atalho no botão de acessibilidade. |
 
 `web/app.js` detecta onde está rodando: no Android (`Capacitor.isNativePlatform()`) usa o armazenamento do celular e agenda os lembretes no sistema; no PC conversa com o `servidor.py` (`/api/notas`).
@@ -22,6 +23,12 @@ Notas, listas e lembretes, no estilo "bloco de notas inteligente". Roda no PC (L
 ```
 
 Dados pessoais (`dados.json`, `notificados.json`, `config.json`, `.janela/`) ficam fora do Git (veja `.gitignore`).
+
+## Rodar no Windows
+
+Baixe `MinhasNotas-Windows.zip` na página de Releases, extraia e dê dois cliques em `instalar.bat` (veja o `LEIA-ME.txt` de dentro).
+No Windows, os lembretes usam as notificações do próprio sistema; com som, o alarme toca até clicar em "Parar alarme".
+Para gerar o zip de novo: `windows/empacotar.sh`.
 
 ## Gerar o APK do Android
 

@@ -15,3 +15,4 @@ android-app/android/build/
 android-app/android/app/build/
 android-app/android/capacitor-cordova-android-plugins/build/
 *.apk
+dist/

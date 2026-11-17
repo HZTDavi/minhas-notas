@@ -1,0 +1,19 @@
+MINHAS NOTAS - instalação no Windows
+====================================
+
+1. Extraia este ZIP: clique com o botão direito > "Extrair tudo...".
+2. Abra a pasta extraída e dê dois cliques em  instalar.bat
+   - Se o Windows mostrar "O Windows protegeu o computador", clique em
+     "Mais informações" > "Executar assim mesmo".
+   - Se o Python não estiver instalado, o instalador baixa sozinho (precisa de internet).
+3. Pronto: o ícone "Minhas Notas" aparece na Área de Trabalho e no menu Iniciar.
+   O app abre numa janela própria. Ele liga sozinho quando o PC é ligado,
+   para os lembretes aparecerem mesmo com a janela fechada.
+
+Lembretes com som tocam até você clicar em "Parar alarme" na notificação.
+
+Levar notas de um PC para o outro: no app, menu (três pontinhos) > "Exportar backup"
+num PC e "Importar backup" no outro.
+
+Suas notas ficam em:  %LOCALAPPDATA%\MinhasNotas\dados.json
+Para remover o app: rode  desinstalar.bat  (as notas são mantidas).

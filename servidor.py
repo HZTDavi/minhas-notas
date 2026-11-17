@@ -7,6 +7,7 @@ Opcional por lembrete: tocar som no PC e vibrar o celular (via app ntfy).
 """
 import json
 import os
+import sys
 import shutil
 import subprocess
 import threading
@@ -29,6 +30,50 @@ SONS_DISPONIVEIS = {
     "mensagem": "message-new-instant.oga",
     "concluido": "complete.oga",
 }
+WINDOWS = os.name == "nt"
+# Windows: sons nativos das notificações (o alarme fica tocando até clicar em "Parar alarme")
+SONS_WINDOWS = {
+    "alarme": "ms-winsoundevent:Notification.Looping.Alarm",
+    "sino": "ms-winsoundevent:Notification.Looping.Alarm2",
+    "telefone": "ms-winsoundevent:Notification.Looping.Call",
+    "mensagem": "ms-winsoundevent:Notification.Looping.Alarm5",
+    "concluido": "ms-winsoundevent:Notification.Looping.Alarm4",
+}
+SONS_WINDOWS_TESTE = {"alarme": "SystemExclamation", "sino": "SystemAsterisk", "telefone": "SystemHand",
+                      "mensagem": "SystemNotification", "concluido": "SystemDefault"}
+# ID do PowerShell: o Windows aceita mostrar notificação com ele sem registrar o app
+APP_ID_WINDOWS = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\\WindowsPowerShell\\v1.0\\powershell.exe"
+SCRIPT_TOAST = r"""
+[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+function Esc([string]$t) { [System.Security.SecurityElement]::Escape($t) }
+$titulo = Esc $env:MN_TITULO; $texto = Esc $env:MN_TEXTO
+if ($env:MN_SOM) {
+  $xml = "<toast scenario='alarm' duration='long'><visual><binding template='ToastGeneric'><text>$titulo</text><text>$texto</text></binding></visual>" +
+         "<audio src='$($env:MN_SOM)' loop='true'/><actions><action activationType='system' arguments='dismiss' content='Parar alarme'/></actions></toast>"
+} else {
+  $xml = "<toast><visual><binding template='ToastGeneric'><text>$titulo</text><text>$texto</text></binding></visual></toast>"
+}
+$doc = New-Object Windows.Data.Xml.Dom.XmlDocument; $doc.LoadXml($xml)
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($env:MN_APP).Show([Windows.UI.Notifications.ToastNotification]::new($doc))
+"""
+
+
+def notificar_windows(titulo, texto, com_som):
+    env = {**os.environ, "MN_TITULO": titulo, "MN_TEXTO": texto, "MN_APP": APP_ID_WINDOWS,
+           "MN_SOM": SONS_WINDOWS.get(config()["som"], SONS_WINDOWS["alarme"]) if com_som else ""}
+    try:
+        r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", SCRIPT_TOAST],
+                           env=env, timeout=20, check=False, capture_output=True, text=True,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except Exception as e:  # noqa: BLE001
+        print("Falha ao notificar:", e, flush=True)
+        return False
+    if r.returncode != 0:
+        print("Falha ao notificar:", r.stderr.strip(), flush=True)
+    return r.returncode == 0
+
+
 CONFIG_PADRAO = {"som": "alarme", "duracao_max": 60, "ntfy_servidor": "https://ntfy.sh", "ntfy_topico": ""}
 
 trava = threading.Lock()
@@ -67,6 +112,8 @@ def notificar(titulo, texto, com_som=False):
     notificação ser fechada (ou clicada em "Parar alarme"), com limite de tempo."""
     titulo = titulo or "Lembrete"
     texto = texto or ""
+    if WINDOWS:
+        return notificar_windows(titulo, texto, com_som)
     if not shutil.which("notify-send"):
         cmd = ["gdbus", "call", "--session",
                "--dest", "org.freedesktop.Notifications",
@@ -135,6 +182,11 @@ def tocar_alarme(parar):
 
 def tocar_som(nome=None, vezes=1):
     """Toca o som algumas vezes (usado no botão "Ouvir")."""
+    if WINDOWS:
+        import winsound
+        alias = SONS_WINDOWS_TESTE.get(nome or config()["som"], "SystemExclamation")
+        threading.Thread(target=lambda: [winsound.PlaySound(alias, winsound.SND_ALIAS) for _ in range(vezes)], daemon=True).start()
+        return
     tocador, arquivo = _tocador(), _arquivo_som(nome)
     if not tocador or not os.path.exists(arquivo):
         return
