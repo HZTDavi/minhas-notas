@@ -1,0 +1,37 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Minhas Notas — instalar</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:600px;margin:32px auto;padding:0 16px;background:#202124;color:#e8eaed}
+h1{margin:0 0 4px}small{color:#9aa0a6}
+.op{margin:14px 0;padding:14px 16px;border-radius:12px;background:#2d2e30;border:1px solid #5f6368}
+.op.sua{border-color:#e8a400;box-shadow:0 0 0 2px #e8a40055}
+.op h2{margin:0 0 6px;font-size:18px}.tag{font-size:12px;background:#e8a400;color:#202124;border-radius:10px;padding:1px 8px;margin-left:6px;display:none}.op.sua .tag{display:inline}
+.cmd{display:flex;gap:8px;align-items:center;margin:8px 0}
+code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;background:#17181a;border-radius:8px;padding:10px;font-size:13px}
+button,a.b{border:0;border-radius:18px;background:#e8a400;color:#202124;font-weight:600;padding:8px 14px;text-decoration:none;cursor:pointer;display:inline-block}
+ol{margin:6px 0;padding-left:20px}
+</style></head><body>
+<h1>📝 Minhas Notas</h1>
+<p>Versão <b>{{VERSAO}}</b> <small>— {{NOVIDADES}}</small></p>
+<p><small>Mande este link para quem quiser instalar: <b>minhas-notas-22fae.web.app</b>. A página mostra o jeito certo para cada aparelho. As notas ficam no próprio aparelho, e depois de instalado o app avisa sozinho quando sair versão nova.</small></p>
+
+<div class="op" id="android"><h2>📱 Android<span class="tag">seu aparelho</span></h2>
+<ol><li>Toque em <b>Baixar o app</b>.</li><li>Abra o arquivo baixado. Se o celular pedir, permita instalar apps desta fonte e toque em <b>Instalar</b>.</li></ol>
+<a class="b" href="{{APK}}">Baixar o app</a></div>
+
+<div class="op" id="windows"><h2>🪟 Windows<span class="tag">seu aparelho</span></h2>
+<ol><li>Clique em <b>Baixar para Windows</b>, extraia o zip (botão direito &gt; Extrair tudo) e dê dois cliques em <b>instalar.bat</b>.</li></ol>
+<a class="b" href="MinhasNotas-Windows.zip">Baixar para Windows</a>
+<p><small>Ou abra o <b>PowerShell</b> e cole:</small></p>
+<div class="cmd"><code>irm https://minhas-notas-22fae.web.app/windows.ps1 | iex</code><button onclick="copiar(this)">Copiar</button></div></div>
+
+<div class="op" id="linux"><h2>🐧 Linux<span class="tag">seu aparelho</span></h2>
+<p><small>Abra o <b>Terminal</b>, cole e aperte Enter:</small></p>
+<div class="cmd"><code>curl -fsSL https://minhas-notas-22fae.web.app/linux.sh | bash</code><button onclick="copiar(this)">Copiar</button></div>
+<p><small>Ou <a href="MinhasNotas-Linux.zip" style="color:#e8a400">baixe o zip</a>, extraia e rode <b>./instalar.sh</b>.</small></p></div>
+
+<script>
+function copiar(b){const t=b.previousElementSibling.textContent;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).catch(()=>{const a=document.createElement('textarea');a.value=t;document.body.append(a);a.select();document.execCommand('copy');a.remove()}).finally(()=>{b.textContent='Copiado!';setTimeout(()=>b.textContent='Copiar',1500)})}
+const ua=navigator.userAgent, sis=/Android/i.test(ua)?'android':/Windows/i.test(ua)?'windows':/Linux|X11/i.test(ua)?'linux':null;
+if(sis){const e=document.getElementById(sis);e.classList.add('sua');e.parentNode.insertBefore(e,document.querySelector('.op'));}
+</script></body></html>
