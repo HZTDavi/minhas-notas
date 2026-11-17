@@ -1017,6 +1017,7 @@ $('#btn-mais').onclick = e => {
     } }, 'Exportar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); $('#arquivo-importar').click(); } }, 'Importar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Nuvem?.dialogo(); } }, 'Conectar aparelhos…'),
+    el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Atualizar?.checar(); } }, 'Procurar atualização' + (typeof VERSAO_APP !== 'undefined' ? ` (versão ${VERSAO_APP})` : '')),
   ]);
 };
 $('#arquivo-importar').onchange = async e => {
@@ -1148,6 +1149,7 @@ function menuNativo(ancora) {
     } }, 'Exportar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); $('#arquivo-importar').click(); } }, 'Importar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Nuvem?.dialogo(); } }, 'Conectar aparelhos…'),
+    el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Atualizar?.checar(); } }, 'Procurar atualização' + (typeof VERSAO_APP !== 'undefined' ? ` (versão ${VERSAO_APP})` : '')),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); dialogoMarcadores(); } }, 'Editar marcadores'),
   ]);
 }

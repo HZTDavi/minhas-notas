@@ -1,0 +1,10 @@
+{
+  "database": { "rules": "regras-firebase.json" },
+  "hosting": {
+    "public": "publicar",
+    "headers": [
+      { "source": "/versao.json", "headers": [ { "key": "Access-Control-Allow-Origin", "value": "*" }, { "key": "Cache-Control", "value": "no-cache" } ] },
+      { "source": "**/*.@(zip|apk)", "headers": [ { "key": "Cache-Control", "value": "no-cache" } ] }
+    ]
+  }
+}

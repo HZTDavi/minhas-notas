@@ -320,3 +320,10 @@ html.nativo #btn-tema { display: inline-grid; }
 .cartao:hover .item .copiar-item { opacity: .55; }
 .cartao .item .copiar-item:hover { opacity: 1; }
 @media (hover: none) { .cartao .item .copiar-item { opacity: .5; } }
+
+/* aviso de versão nova */
+.faixa-atualizacao { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 auto 16px; max-width: 600px; padding: 10px 14px; border-radius: 8px; background: #e8a400; color: #202124; font-size: 14px; }
+.faixa-atualizacao .botoes { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+.faixa-atualizacao .link { border: 0; background: none; color: #202124; text-decoration: underline; padding: 4px; }
+.faixa-atualizacao .botao-atualizar { border: 0; border-radius: 18px; background: #202124; color: #fff; font-weight: 600; padding: 8px 16px; }
+.faixa-atualizacao a { color: #202124; font-weight: 600; }

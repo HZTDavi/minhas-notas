@@ -13,6 +13,8 @@ import subprocess
 import threading
 import time
 import urllib.request
+import zipfile
+import io
 from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
@@ -77,6 +79,65 @@ def notificar_windows(titulo, texto, com_som):
 CONFIG_PADRAO = {"som": "alarme", "duracao_max": 60, "ntfy_servidor": "https://ntfy.sh", "ntfy_topico": ""}
 
 trava = threading.Lock()
+
+# ---------- atualização automática ----------
+SITE = "https://minhas-notas-22fae.web.app"
+# só estes arquivos do programa são trocados; as notas (dados.json, config.json, notificados.json) nunca
+PROGRAMA = {"servidor.py", "bolha.py", "abrir.sh", "reiniciar-bolha.sh", "instalar.sh", "icone.svg",
+            "abrir.vbs", "iniciar-servidor.vbs", "minhas-notas.ico", "desinstalar.bat"}
+
+
+def atualizar_programa():
+    """Baixa o pacote novo do site e troca os arquivos do programa. Devolve (ok, mensagem)."""
+    if os.path.isdir(os.path.join(PASTA, ".git")):
+        return False, "Este PC usa a pasta de desenvolvimento (git): atualize pelo git."
+    nome = "MinhasNotas-Windows.zip" if WINDOWS else "MinhasNotas-Linux.zip"
+    try:
+        with urllib.request.urlopen(f"{SITE}/{nome}?t={int(time.time())}", timeout=60) as r:
+            pacote = zipfile.ZipFile(io.BytesIO(r.read()))
+    except Exception as e:  # noqa: BLE001
+        return False, f"Não consegui baixar a atualização ({e})."
+    novos_web = {}
+    for info in pacote.infolist():
+        if info.is_dir():
+            continue
+        partes = info.filename.split("/", 1)
+        rel = partes[1] if len(partes) == 2 else partes[0]   # tira a pasta raiz do zip
+        if rel.startswith("web/"):
+            novos_web[rel[4:]] = pacote.read(info)
+        elif rel in PROGRAMA:
+            destino = os.path.join(PASTA, rel)
+            tmp = destino + ".novo"
+            with open(tmp, "wb") as f:
+                f.write(pacote.read(info))
+            if not WINDOWS and rel.endswith((".sh", ".py")):
+                os.chmod(tmp, 0o755)
+            os.replace(tmp, destino)
+    if novos_web:   # troca a pasta web inteira de uma vez
+        nova, velha = WEB + ".novo", WEB + ".velha"
+        shutil.rmtree(nova, ignore_errors=True)
+        for rel, conteudo in novos_web.items():
+            caminho = os.path.join(nova, *rel.split("/"))
+            os.makedirs(os.path.dirname(caminho), exist_ok=True)
+            with open(caminho, "wb") as f:
+                f.write(conteudo)
+        shutil.rmtree(velha, ignore_errors=True)
+        if os.path.isdir(WEB):
+            os.replace(WEB, velha)
+        os.replace(nova, WEB)
+        shutil.rmtree(velha, ignore_errors=True)
+    return True, "Atualizado"
+
+
+def reiniciar_depois():
+    """Reinicia o servidor (e a bolinha no Linux) com o código novo, logo depois de responder."""
+    def _vai():
+        time.sleep(1.0)
+        if not WINDOWS and os.path.exists(os.path.join(PASTA, "reiniciar-bolha.sh")):
+            subprocess.Popen(["bash", os.path.join(PASTA, "reiniciar-bolha.sh")], start_new_session=True,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        os.execv(sys.executable, [sys.executable, os.path.join(PASTA, "servidor.py")])
+    threading.Thread(target=_vai, daemon=True).start()
 
 
 def ler_json(caminho, padrao):
@@ -349,6 +410,11 @@ class Handler(SimpleHTTPRequestHandler):
                 nome = None
             tocar_som(nome)
             return self._json(200, {"ok": True})
+        if self.path.startswith("/api/atualizar"):
+            ok, msg = atualizar_programa()
+            if ok:
+                reiniciar_depois()
+            return self._json(200, {"ok": ok, "mensagem": msg})
         if self.path.startswith("/api/testar-celular"):
             ok = enviar_celular("⏰ Minhas Notas", "Teste: se o celular vibrou, está tudo certo! 📱")
             return self._json(200, {"ok": ok})
@@ -358,4 +424,12 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     threading.Thread(target=verificar_lembretes, daemon=True).start()
     print(f"Minhas Notas rodando em http://{HOST}:{PORTA}", flush=True)
-    ThreadingHTTPServer((HOST, PORTA), Handler).serve_forever()
+    for tentativa in range(40):   # depois de uma atualização, a porta pode demorar um instante para soltar
+        try:
+            servidor = ThreadingHTTPServer((HOST, PORTA), Handler)
+            break
+        except OSError:
+            time.sleep(0.5)
+    else:
+        raise SystemExit("Porta 8765 ocupada")
+    servidor.serve_forever()
