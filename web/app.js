@@ -49,6 +49,11 @@ async function copiar(texto, msg = 'Copiado') {
   catch (e) { const t = el('textarea', { style: 'position:fixed;opacity:0' }); t.value = texto; document.body.append(t); t.select(); try { document.execCommand('copy'); } catch (er) {} t.remove(); }
   aviso(msg);
 }
+function popItem(ancora, i) {
+  abrirPop(ancora, el('div', { class: 'pop-item' },
+    el('div', { class: 'pop-item-texto' }, i.texto),
+    el('button', { class: 'opcao', onclick: () => { fecharPop(); copiar(i.texto, 'Item copiado'); } }, 'Copiar')));
+}
 function textoDaNota(n) {
   const corpo = n.tipo === 'lista'
     ? n.itens.filter(i => i.texto.trim()).map(i => (i.feito ? '✓ ' : '• ') + i.texto).join('\n')
@@ -639,12 +644,12 @@ function cartao(n) {
     const feitos = n.itens.filter(i => i.feito && i.texto.trim());
     const mostrar = pend.slice(0, 10);
     for (const i of mostrar) {
-      c.append(el('label', { class: 'item' },
-        el('input', { type: 'checkbox', disabled: naLixeira, onchange: () => { i.feito = true; tocar(n); atualizar(); } }),
-        el('span', {}, i.texto,
+      // item numa linha só (o cartão fica pequeno); tocar no texto abre o item inteiro com a opção de copiar
+      c.append(el('div', { class: 'item' },
+        el('input', { type: 'checkbox', disabled: naLixeira, onclick: e => e.stopPropagation(), onchange: () => { i.feito = true; tocar(n); atualizar(); } }),
+        el('span', { class: 'texto-item', title: i.texto, onclick: e => { e.stopPropagation(); popItem(e.currentTarget, i); } }, i.texto,
           i.lembrete ? el('small', { class: 'lembrete-item' + (itemDisparado(n, i) ? ' passou' : ''), title: 'Lembrete deste item' },
-            '⏰ ' + textoLembrete(i.lembrete) + iconesAlerta(i)) : null),
-        btnIcone('copiar', 'Copiar este item', e => { e.preventDefault(); e.stopPropagation(); copiar(i.texto, 'Item copiado'); }, 'copiar-item')));
+            '⏰ ' + textoLembrete(i.lembrete) + iconesAlerta(i)) : null)));
     }
     const resto = pend.length - mostrar.length;
     if (resto > 0) c.append(el('div', { class: 'mais-itens' }, `+ ${resto} ${resto === 1 ? 'item' : 'itens'}`));
@@ -1017,6 +1022,7 @@ $('#btn-mais').onclick = e => {
     } }, 'Exportar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); $('#arquivo-importar').click(); } }, 'Importar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Nuvem?.dialogo(); } }, 'Conectar aparelhos…'),
+    el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Atualizar?.instalarOutro(); } }, 'Instalar em outro aparelho…'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Atualizar?.checar(); } }, 'Procurar atualização' + (typeof VERSAO_APP !== 'undefined' ? ` (versão ${VERSAO_APP})` : '')),
   ]);
 };
@@ -1149,6 +1155,7 @@ function menuNativo(ancora) {
     } }, 'Exportar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); $('#arquivo-importar').click(); } }, 'Importar backup'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Nuvem?.dialogo(); } }, 'Conectar aparelhos…'),
+    el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Atualizar?.instalarOutro(); } }, 'Instalar em outro aparelho…'),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); window.Atualizar?.checar(); } }, 'Procurar atualização' + (typeof VERSAO_APP !== 'undefined' ? ` (versão ${VERSAO_APP})` : '')),
     el('button', { class: 'opcao', onclick: () => { fecharPop(); dialogoMarcadores(); } }, 'Editar marcadores'),
   ]);

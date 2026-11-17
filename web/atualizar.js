@@ -2,7 +2,7 @@
  * PC (Linux/Windows): o servidor baixa o pacote novo, troca só os arquivos do programa (as notas ficam) e reinicia.
  * Celular: abre o download do APK novo; o Android pede para tocar em "Atualizar".
  */
-const VERSAO_APP = '1.4.0';
+const VERSAO_APP = '1.4.1';
 (function () {
   'use strict';
   const SITE = 'https://minhas-notas-22fae.web.app';
@@ -61,7 +61,32 @@ const VERSAO_APP = '1.4.0';
     f.replaceChildren(el('div', { class: 'txt' }, 'Atualizado. Feche e abra o Minhas Notas.'));
   }
 
-  window.Atualizar = { checar: () => checar(true), versao: VERSAO_APP };
+  // "Instalar em outro aparelho": link do site + comandos prontos para copiar (ou compartilhar no celular)
+  function instalarOutro() {
+    const modal = $('#modal'), ed = $('#editor');
+    pintarCor(ed, ''); ed.removeAttribute('data-cor'); modal.hidden = false;
+    const fechar = () => { modal.hidden = true; modal.removeEventListener('mousedown', fora); fecharDialogoAtual = null; render(); };
+    const fora = e => { if (e.target === modal) fechar(); };
+    modal.addEventListener('mousedown', fora); fecharDialogoAtual = fechar;
+    const linha = (rotulo, texto, msg) => el('div', { class: 'instalar-linha' }, el('span', {}, rotulo),
+      el('div', { class: 'campo' }, el('code', {}, texto), el('button', { class: 'link', onclick: () => copiar(texto, msg) }, 'Copiar')));
+    const compartilhar = async () => {
+      const dados = { title: 'Minhas Notas', text: 'Instale o Minhas Notas:', url: SITE };
+      try { if (NATIVO && Plug.Share) await Plug.Share.share({ ...dados, dialogTitle: 'Enviar link' }); else if (navigator.share) await navigator.share(dados); else copiar(SITE, 'Link copiado'); }
+      catch (e) { /* cancelou */ }
+    };
+    ed.replaceChildren(el('div', { class: 'dialogo config' }, el('div', { class: 'area' },
+      el('h2', {}, '📲 Instalar em outro aparelho'),
+      el('p', {}, 'Mande este link: a página mostra o jeito certo para cada aparelho (celular, Windows ou Linux).'),
+      linha('Link', SITE, 'Link copiado'),
+      el('div', { class: 'campo' }, el('button', { class: 'link', onclick: compartilhar }, 'Compartilhar link…')),
+      linha('Linux — colar no Terminal', `curl -fsSL ${SITE}/linux.sh | bash`, 'Comando copiado'),
+      linha('Windows — colar no PowerShell', `irm ${SITE}/windows.ps1 | iex`, 'Comando copiado'),
+      el('p', { class: 'nota-privacidade' }, `Versão ${VERSAO_APP}. As notas de cada pessoa ficam no aparelho dela; instalar não leva as suas notas junto.`)),
+      el('div', { class: 'acoes' }, el('button', { onclick: fechar }, 'Fechar'))));
+  }
+
+  window.Atualizar = { checar: () => checar(true), versao: VERSAO_APP, instalarOutro };
   setTimeout(() => checar(false), 4000);
   setInterval(() => checar(false), 6 * 3600000);
 })();
